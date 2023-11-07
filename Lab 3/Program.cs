@@ -7,16 +7,19 @@ namespace Lab3
 {
     internal class Program
     {
+        public static object TryParse { get; private set; }
+
         public static void DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
-            Tuple<iFunction, double, double> arguments = (Tuple<iFunction, double, double>)e.Argument;
+            Tuple<iFunction, double, double, double> arguments = (Tuple<iFunction, double, double,double>)e.Argument;
 
             iFunction function = arguments.Item1;
-            double range_start = arguments.Item2;
-            double range_end = arguments.Item3;
+            double step = arguments.Item2;
+            double range_start = arguments.Item3;
+            double range_end = arguments.Item4;
 
-            double step = 0.000001;
+            step = 1/step;
 
             double[] score = new double[2];
             int totalIterations = (int)((range_end - range_start) / step);
@@ -74,7 +77,7 @@ namespace Lab3
             }
         }
 
-        public static void Calculation(iFunction function, double range_start, double range_end)
+        public static void Calculation(iFunction function,double steps, double range_start, double range_end)
         {
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += new DoWorkEventHandler(DoWork);
@@ -84,7 +87,7 @@ namespace Lab3
             worker.WorkerReportsProgress = true;
             worker.WorkerSupportsCancellation = true;
 
-            Tuple<iFunction, double, double> arguments = new Tuple<iFunction, double, double>(function, range_start, range_end);
+            Tuple<iFunction, double, double, double> arguments = new Tuple<iFunction, double, double, double>(function, steps, range_start, range_end);
             worker.RunWorkerAsync(arguments);
         }
 
@@ -92,7 +95,8 @@ namespace Lab3
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            int function_pick = 0;
+            double function_pick = 0;
+            double steps =0;
 
             do
             {
@@ -106,7 +110,7 @@ namespace Lab3
 
                 Console.WriteLine("0. Wyjdź");
 
-                if (!int.TryParse(Console.ReadLine(), out function_pick) || function_pick < 0 || function_pick > 6)
+                if (!double.TryParse(Console.ReadLine(), out function_pick) || function_pick < 0 || function_pick > 6)
                 {
                     Console.WriteLine("Niepoprawny wybór, spróbuj ponownie.");
                     continue;
@@ -139,9 +143,18 @@ namespace Lab3
 
                 }
 
-                Calculation(function, -10, 10);
-                Calculation(function, -5, 20);
-                Calculation(function, -5, 0);
+                Console.WriteLine("Wprowadz liczbę kroków (dokładność obliczeń)");
+                steps = double.Parse(Console.ReadLine());
+                Thread.Sleep(1000);
+                Console.Clear();
+                Console.WriteLine("Wciśnij dowolny przycisk aby zakończyć obliczenia");
+                Console.WriteLine("");
+
+
+
+                Calculation(function, steps, -10, 10);
+                Calculation(function, steps, -5, 20);
+                Calculation(function, steps, -5, 0);
 
                 stopwatch.Stop();
                 TimeSpan elapsed = stopwatch.Elapsed;
